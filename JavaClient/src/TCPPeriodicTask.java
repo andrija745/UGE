@@ -27,12 +27,15 @@ public class TCPPeriodicTask extends TimerTask {
 	public void run() {
 
 		if (run) {
-			executor = Executors.newSingleThreadExecutor();
+			executor = Executors.newFixedThreadPool(10);
 			// try {
-			String second = String.valueOf(Calendar.getInstance()
-					.getTimeInMillis() / 1000);
-			Future<String> future = executor.submit(new TCPExecutor(second));
-			queue.add(future);
+			long second = Calendar.getInstance().getTimeInMillis() / 1000;
+			Future<String> future;
+			for (int i = 9; i >= 0; i--) {
+				String secondStr = String.valueOf(second - i);
+				future = executor.submit(new TCPExecutor(secondStr));
+				queue.add(future);
+			}
 
 			log.info("Started..");
 			Iterator<Future<String>> it = queue.iterator();
