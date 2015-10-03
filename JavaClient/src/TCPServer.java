@@ -1,12 +1,9 @@
 import java.util.Scanner;
-import java.util.logging.Logger;
 
-public class TCPClient {
+public class TCPServer {
 
-	static Logger log = Logger.getLogger(TCPClient.class.getName());
-
-	public static void main(String[] args) {
-		TCPClientThread thread = new TCPClientThread();
+	public static void main(String argv[]) throws Exception {
+		TCPServerThread thread = new TCPServerThread();
 		thread.start();
 
 		Scanner sc = new Scanner(System.in);
