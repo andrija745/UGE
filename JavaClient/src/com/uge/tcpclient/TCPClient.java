@@ -14,7 +14,7 @@ public class TCPClient {
 
 	public static void main(String[] args) {
 		periodicTask = new TCPPeriodicTask(
-				Arrays.asList(new String[] { "localhost" }));
+				Arrays.asList(new String[] { "172.24.26.13" }));
 		Timer timer = new Timer();
 		timer.schedule(periodicTask, 0, 60 * 1000);
 
