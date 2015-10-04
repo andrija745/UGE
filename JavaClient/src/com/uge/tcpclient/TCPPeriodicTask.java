@@ -1,7 +1,8 @@
 package com.uge.tcpclient;
+
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -20,29 +21,38 @@ public class TCPPeriodicTask extends TimerTask {
 	private static ExecutorService executor;
 	private static Queue<Future<String>> queue;
 
-	public TCPPeriodicTask() {
+	private List<String> endPoints;
+
+	public TCPPeriodicTask(List<String> ipAddresses) {
 		queue = new LinkedList<Future<String>>();
+		endPoints = ipAddresses;
 	}
 
 	@Override
 	public void run() {
 
 		if (run) {
-			executor = Executors.newFixedThreadPool(10);
+			executor = Executors.newFixedThreadPool(endPoints.size());
 			// try {
-			long second = Calendar.getInstance().getTimeInMillis() / 1000;
+			Calendar cal = Calendar.getInstance();
+			String min = (cal.get(Calendar.HOUR_OF_DAY) * 60) + ""
+					+ cal.get(Calendar.MINUTE);
 			Future<String> future;
-			for (int i = 9; i >= 0; i--) {
-				String secondStr = String.valueOf(second - i);
-				future = executor.submit(new TCPExecutor(secondStr));
-				queue.add(future);
+			for (String endPoint : endPoints) {
+				future = executor.submit(new TCPExecutor(min, endPoint));
+				Queue<Future<String>> tmp_queue = new LinkedList<Future<String>>();
+				tmp_queue.add(future);
+				tmp_queue.addAll(queue);
+				queue.clear();
+				queue.addAll(tmp_queue);
 			}
 
 			log.info("Started..");
-			Iterator<Future<String>> it = queue.iterator();
-			while (it.hasNext()) {
-				future = it.next();
-				queue.poll();
+			int i = 0;
+			int size = queue.size();
+			while (i < size) {
+				i++;
+				future = queue.poll();
 				try {
 					log.info(future.get(20, TimeUnit.SECONDS));
 				} catch (TimeoutException e) {
@@ -57,15 +67,13 @@ public class TCPPeriodicTask extends TimerTask {
 					future.cancel(true);
 					queue.add(future);
 					log.log(Level.SEVERE, "Terminated - Execution!", e);
+				} catch (Exception e) {
+					future.cancel(true);
+					queue.add(future);
+					log.log(Level.SEVERE, "Terminated!", e);
 				}
 			}
 			log.info("Finished!");
-			// log.info("Waiting one minute...");
-			// Thread.sleep(60000);
-			// } catch (InterruptedException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
 		}
 
 		executor.shutdownNow();
