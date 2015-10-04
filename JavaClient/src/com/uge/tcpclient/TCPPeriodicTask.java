@@ -1,3 +1,4 @@
+package com.uge.tcpclient;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -40,7 +41,8 @@ public class TCPPeriodicTask extends TimerTask {
 			log.info("Started..");
 			Iterator<Future<String>> it = queue.iterator();
 			while (it.hasNext()) {
-				future = queue.poll();
+				future = it.next();
+				queue.poll();
 				try {
 					log.info(future.get(20, TimeUnit.SECONDS));
 				} catch (TimeoutException e) {

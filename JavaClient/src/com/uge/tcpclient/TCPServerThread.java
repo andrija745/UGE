@@ -1,3 +1,5 @@
+package com.uge.tcpclient;
+
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -20,10 +22,8 @@ public class TCPServerThread extends Thread {
 				try {
 					Socket connectionSocket = welcomeSocket.accept();
 					BufferedReader inFromClient = new BufferedReader(
-							new InputStreamReader(
-									connectionSocket.getInputStream()));
-					DataOutputStream outToClient = new DataOutputStream(
-							connectionSocket.getOutputStream());
+							new InputStreamReader(connectionSocket.getInputStream()));
+					DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 					clientSentence = inFromClient.readLine();
 					System.out.println("Received: " + clientSentence);
 					response = clientSentence.toLowerCase() + '\n';
