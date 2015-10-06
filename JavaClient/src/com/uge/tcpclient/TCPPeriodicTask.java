@@ -35,7 +35,10 @@ public class TCPPeriodicTask extends TimerTask {
 			executor = Executors.newFixedThreadPool(endPoints.size());
 			// try {
 			Calendar cal = Calendar.getInstance();
-			String min = (cal.get(Calendar.HOUR_OF_DAY) * 60) + "" + cal.get(Calendar.MINUTE);
+			String min = String.valueOf(cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE) + 1);
+			while (min.length() < 4)
+				min = "0" + min;
+
 			Future<String> future;
 			for (String endPoint : endPoints) {
 				future = executor.submit(new TCPExecutor(min, endPoint));
@@ -49,7 +52,9 @@ public class TCPPeriodicTask extends TimerTask {
 			log.info("Started..");
 			int i = 0;
 			int size = queue.size();
-			while (i < size) {
+			while (i < size) { // sta se zbiva ukoliko se u nastavku neki future
+								// vrati u queue u okviru exceptions? size nece
+								// da oslikava realno stanje u redu?
 				i++;
 				future = queue.poll();
 				try {

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 public class TCPExecutor implements Callable<String> {
 
 	// private static final String ENDPOINT = "172.24.26.13";
-	private String endPoint = "localhost";
+	private String endPoint = "172.24.26.13";
 
 	static Logger log = Logger.getLogger(TCPExecutor.class.getName());
 
@@ -31,42 +31,38 @@ public class TCPExecutor implements Callable<String> {
 
 	@SuppressWarnings("resource")
 	@Override
-	public String call() throws ExecutionException, UnknownHostException,
-			IOException, InterruptedException {
+	public String call() throws ExecutionException, UnknownHostException, IOException, InterruptedException {
 		String resp = null;
 		Socket skt = new Socket(endPoint, 1234);
 
 		log.info("Povezan na " + skt.getRemoteSocketAddress());
 
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				skt.getInputStream()));
-		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(
-				skt.getOutputStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
+		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(skt.getOutputStream()));
 
-		Thread.sleep(2000);
-		log.info("Proslo 2 sekundi, prosledjujem IM poruku\n");
-		out.write("IM" + cycle + "\n");
+		Thread.sleep(3000);
+		log.info("Proslo 3 sekundi, prosledjujem IM poruku\n");
+		out.write("IM" + cycle);
 		// out.close();
 		out.flush();
 
 		long start = Calendar.getInstance().getTimeInMillis();
 		log.info("Received string: \n");
-		if (in.ready())
-			resp = in.readLine();
-		else {
-			Thread.sleep(2000);
-			if (in.ready())
-				resp = in.readLine();
-			else
-				throw new ExecutionException("Stream not ready for reading",
-						new Exception(endPoint + " " + cycle));
-		}
+		// if (in.ready())
+		// resp = in.readLine();
+		// else {
+		// this.wait(2000);
+		// if (in.ready())
+		resp = in.readLine();
+		// else
+		// throw new ExecutionException("Stream not ready for reading",
+		// new Exception(endPoint + " " + cycle));
+		// }
 		log.info(resp); // Read one line and output it on screen
 		writeToFile(endPoint, resp);
 
 		log.info("\nPrimljeno\n");
-		log.info("Vreme potrebno za prijem paketa: "
-				+ (Calendar.getInstance().getTimeInMillis() - start) + "ms");
+		log.info("Vreme potrebno za prijem paketa: " + (Calendar.getInstance().getTimeInMillis() - start) + "ms");
 		in.close();
 		skt.close();
 		// } catch (IOException e) {
@@ -78,11 +74,10 @@ public class TCPExecutor implements Callable<String> {
 
 	private void writeToFile(String endPoint, String resp) {
 		try {
-			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(new File("data-" + endPoint + ".txt"),
-							true)));
+			BufferedWriter out = new BufferedWriter(
+					new OutputStreamWriter(new FileOutputStream(new File("data-" + endPoint + ".txt"), true)));
 
-			out.write(cycle + ": " + resp + "\n");
+			out.write("\n" + cycle + ": " + resp + "\n");
 			out.flush();
 			out.close();
 		} catch (FileNotFoundException e) {
