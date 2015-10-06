@@ -39,18 +39,19 @@ public class TCPExecutor implements Callable<String> {
 		BufferedReader in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
 		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(skt.getOutputStream()));
 
-		Thread.sleep(2000);
-		log.info("Proslo 2 sekunde, prosledjujem IM poruku\n");
+		Thread.sleep(4000);
+		log.info("Proslo 4 sekunde, prosledjujem IM poruku\n");
 		out.write("IM" + cycle + "\n");
 		out.flush();
-		out.close();
+		
 
 		long start = Calendar.getInstance().getTimeInMillis();
 		log.info("Received string: \n");
 		// if (in.ready())
 		// resp = in.readLine();
 		// else {
-		// this.wait(2000);
+		Thread.sleep(2000);
+		log.info("Proslo jos 2 sekunde, pre citanja odgovora\n");
 		// if (in.ready())
 		resp = in.readLine();
 		// else
@@ -63,6 +64,7 @@ public class TCPExecutor implements Callable<String> {
 		log.info("\nPrimljeno\n");
 		log.info("Vreme potrebno za prijem paketa: " + (Calendar.getInstance().getTimeInMillis() - start) + "ms");
 		in.close();
+		out.close();
 		skt.close();
 		// } catch (IOException e) {
 		// log.log(Level.SEVERE, "Connection Failed", e);

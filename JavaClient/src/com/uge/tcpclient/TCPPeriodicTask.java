@@ -58,7 +58,7 @@ public class TCPPeriodicTask extends TimerTask {
 				i++;
 				future = queue.poll();
 				try {
-					String resp = future.get(20, TimeUnit.SECONDS);
+					String resp = future.get(30, TimeUnit.SECONDS);
 					log.info(resp);
 					if (resp == null)
 						queue.add(future);
