@@ -29,7 +29,6 @@ public class TCPExecutor implements Callable<String> {
 		this.endPoint = endPoint;
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public String call() throws ExecutionException, UnknownHostException, IOException, InterruptedException {
 		String resp = null;
@@ -40,11 +39,11 @@ public class TCPExecutor implements Callable<String> {
 		BufferedReader in = new BufferedReader(new InputStreamReader(skt.getInputStream()));
 		BufferedWriter out = new BufferedWriter(new OutputStreamWriter(skt.getOutputStream()));
 
-		Thread.sleep(3000);
-		log.info("Proslo 3 sekundi, prosledjujem IM poruku\n");
-		out.write("IM" + cycle);
-		// out.close();
+		Thread.sleep(2000);
+		log.info("Proslo 2 sekunde, prosledjujem IM poruku\n");
+		out.write("IM" + cycle + "\n");
 		out.flush();
+		out.close();
 
 		long start = Calendar.getInstance().getTimeInMillis();
 		log.info("Received string: \n");
@@ -74,8 +73,8 @@ public class TCPExecutor implements Callable<String> {
 
 	private void writeToFile(String endPoint, String resp) {
 		try {
-			BufferedWriter out = new BufferedWriter(
-					new OutputStreamWriter(new FileOutputStream(new File("data-" + endPoint + ".txt"), true)));
+			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("data-"
+					+ endPoint + ".txt"), true)));
 
 			out.write("\n" + cycle + ": " + resp + "\n");
 			out.flush();
