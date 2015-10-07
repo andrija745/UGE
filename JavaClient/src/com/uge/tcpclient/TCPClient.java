@@ -17,7 +17,6 @@ public class TCPClient {
 				Arrays.asList(new String[] { "172.24.26.13" }));
 		Timer timer = new Timer();
 		timer.schedule(periodicTask, 0, 60 * 1000);
-
 		// listen to console input for stop
 		Scanner sc = new Scanner(System.in);
 		String line = sc.nextLine();
