@@ -50,7 +50,7 @@ public class TCPPeriodicTask extends TimerTask {
 				queue.addAll(tmp_queue);
 			}
 
-			log.info("Started..");
+			log.info("Started...");
 			int i = 0;
 			int size = queue.size();
 			while (i < size) { // sta se zbiva ukoliko se u nastavku neki future
@@ -64,6 +64,7 @@ public class TCPPeriodicTask extends TimerTask {
 					log.info(resp);
 					if (resp == null || resp.length() < 10) {
 						requeueFutureTask(item);
+						log.info("Requeued for second execution\n");
 					}
 				} catch (TimeoutException e) {
 					future.cancel(true);
