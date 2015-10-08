@@ -60,7 +60,7 @@ public class TCPPeriodicTask extends TimerTask {
 				try {
 					String resp = future.get(40, TimeUnit.SECONDS);
 					log.info(resp);
-					if (resp == null)
+					if (resp == null || resp.length() < 10)
 						queue.add(future);
 				} catch (TimeoutException e) {
 					future.cancel(true);

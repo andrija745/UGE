@@ -49,10 +49,10 @@ public class TCPExecutor implements Callable<String> {
 
 		skt.setSoTimeout(10000);
 		try {
-			//log.info("Received string: \n");
+			// log.info("Received string: \n");
 			resp = in.readLine();
 			if (resp != null)
-				log.info("Received!\n");	
+				log.info("Received!\n");
 			// TODO do stuff with readme
 		} catch (SocketTimeoutException e) {
 			// did not receive the line. readme is undefined, but the socket
@@ -78,20 +78,23 @@ public class TCPExecutor implements Callable<String> {
 		// log.info(resp); // Read one line and output it on screen
 		writeToFile(endPoint, resp);
 
-		//log.info("Received!\n");
+		// log.info("Received!\n");
 		log.info("Vreme potrebno za prijem paketa: " + (Calendar.getInstance().getTimeInMillis() - start) + "ms");
 		out.close();
 		in.close();
 		skt.close();
 		log.info("Vreme trajanja konekcije: " + (Calendar.getInstance().getTimeInMillis() - sktStart) + "ms");
-	
+
 		return resp;
 	}
 
 	private void writeToFile(String endPoint, String resp) {
+		if (resp == null || resp.length() < 10)
+			return;
+
 		try {
-			BufferedWriter out = new BufferedWriter(
-					new OutputStreamWriter(new FileOutputStream(new File("data-" + endPoint + ".txt"), true)));
+			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("data-"
+					+ endPoint + ".txt"), true)));
 
 			out.write("\n" + cycle + ": " + resp + "\n");
 			out.flush();
