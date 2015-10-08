@@ -16,7 +16,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
-public class TCPExecutor implements Callable<String> {
+import com.uge.tcpclient.typeSystem.ExecutorResponse;
+
+public class TCPExecutor implements Callable<ExecutorResponse> {
 
 	// private static final String ENDPOINT = "172.24.26.13";
 	private String endPoint = "172.24.26.13";
@@ -31,7 +33,7 @@ public class TCPExecutor implements Callable<String> {
 	}
 
 	@Override
-	public String call() throws ExecutionException, UnknownHostException, IOException, InterruptedException {
+	public ExecutorResponse call() throws ExecutionException, UnknownHostException, IOException, InterruptedException {
 		String resp = null;
 		Socket skt = new Socket(endPoint, 1234);
 		log.info("Povezan na " + skt.getRemoteSocketAddress());
@@ -85,7 +87,7 @@ public class TCPExecutor implements Callable<String> {
 		skt.close();
 		log.info("Vreme trajanja konekcije: " + (Calendar.getInstance().getTimeInMillis() - sktStart) + "ms");
 
-		return resp;
+		return new ExecutorResponse(resp, cycle, endPoint);
 	}
 
 	private void writeToFile(String endPoint, String resp) {
