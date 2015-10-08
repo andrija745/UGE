@@ -1,23 +1,25 @@
 package com.uge.tcpclient.typeSystem;
 
-public class ExecutorResponse {
-	private String resp;
+import java.util.concurrent.Future;
+
+public class QueueItem {
+	private Future<String> future;
 	private String cycle;
 	private String endPoint;
 
-	public ExecutorResponse(String resp, String cycle, String endPoint) {
+	public QueueItem(Future<String> future, String cycle, String endPoint) {
 		super();
-		this.resp = resp;
+		this.future = future;
 		this.cycle = cycle;
 		this.endPoint = endPoint;
 	}
 
-	public String getResp() {
-		return resp;
+	public Future<String> getFuture() {
+		return future;
 	}
 
-	public void setResp(String resp) {
-		this.resp = resp;
+	public void setFuture(Future<String> resp) {
+		this.future = resp;
 	}
 
 	public String getCycle() {
@@ -38,7 +40,7 @@ public class ExecutorResponse {
 
 	@Override
 	public String toString() {
-		return "ExecutorResponse [resp=" + resp + ", cycle=" + cycle + ", endPoint=" + endPoint + "]";
+		return "QueueItem [future=" + future.toString() + ", cycle=" + cycle + ", endPoint=" + endPoint + "]";
 	}
 
 }

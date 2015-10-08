@@ -14,19 +14,19 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.uge.tcpclient.typeSystem.ExecutorResponse;
+import com.uge.tcpclient.typeSystem.QueueItem;
 
 public class TCPPeriodicTask extends TimerTask {
 	static Logger log = Logger.getLogger(TCPPeriodicTask.class.getName());
 
 	private static boolean run = true;
 	private static ExecutorService executor;
-	private static Queue<Future<ExecutorResponse>> queue;
+	private static Queue<QueueItem> queue;
 
 	private List<String> endPoints;
 
 	public TCPPeriodicTask(List<String> ipAddresses) {
-		queue = new LinkedList<Future<ExecutorResponse>>();
+		queue = new LinkedList<QueueItem>();
 		endPoints = ipAddresses;
 	}
 
@@ -34,18 +34,17 @@ public class TCPPeriodicTask extends TimerTask {
 	public void run() {
 
 		if (run) {
-			executor = Executors.newFixedThreadPool(endPoints.size());
+			executor = Executors.newCachedThreadPool();
 			// try {
 			Calendar cal = Calendar.getInstance();
 			String min = String.valueOf(cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE) + 1);
 			while (min.length() < 4)
 				min = "0" + min;
 
-			Future<ExecutorResponse> future;
 			for (String endPoint : endPoints) {
-				future = executor.submit(new TCPExecutor(min, endPoint));
-				Queue<Future<ExecutorResponse>> tmp_queue = new LinkedList<Future<ExecutorResponse>>();
-				tmp_queue.add(future);
+				Future<String> future = executor.submit(new TCPExecutor(min, endPoint));
+				Queue<QueueItem> tmp_queue = new LinkedList<QueueItem>();
+				tmp_queue.add(new QueueItem(future, min, endPoint));
 				tmp_queue.addAll(queue);
 				queue.clear();
 				queue.addAll(tmp_queue);
@@ -58,30 +57,29 @@ public class TCPPeriodicTask extends TimerTask {
 								// vrati u queue u okviru exceptions? size nece
 								// da oslikava realno stanje u redu?
 				i++;
-				future = queue.poll();
+				QueueItem item = queue.poll();
+				Future<String> future = item.getFuture();
 				try {
-					ExecutorResponse execResp = future.get(40, TimeUnit.SECONDS);
-					log.info(execResp.toString());
-					if (execResp.getResp() == null || execResp.getResp().length() < 10) {
-						TCPExecutor exec = new TCPExecutor(execResp.getCycle(), execResp.getEndPoint());
-						Future<ExecutorResponse> repeat_future = executor.submit(exec);
-						queue.add(repeat_future);
+					String resp = future.get(40, TimeUnit.SECONDS);
+					log.info(resp);
+					if (resp == null || resp.length() < 10) {
+						requeueFutureTask(item);
 					}
 				} catch (TimeoutException e) {
 					future.cancel(true);
-					queue.add(future);
+					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated - Time Out!", e);
 				} catch (InterruptedException e) {
 					future.cancel(true);
-					queue.add(future);
+					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated - Interupt!", e);
 				} catch (ExecutionException e) {
 					future.cancel(true);
-					queue.add(future);
+					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated - Execution!", e);
 				} catch (Exception e) {
 					future.cancel(true);
-					queue.add(future);
+					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated!", e);
 				}
 			}
@@ -89,6 +87,12 @@ public class TCPPeriodicTask extends TimerTask {
 		}
 
 		executor.shutdownNow();
+	}
+
+	private void requeueFutureTask(QueueItem item) {
+		TCPExecutor exec = new TCPExecutor(item.getCycle(), item.getEndPoint());
+		Future<String> future = executor.submit(exec);
+		queue.add(new QueueItem(future, item.getCycle(), item.getEndPoint()));
 	}
 
 	public void interrupt() {
