@@ -1,5 +1,11 @@
 package com.uge.tcpclient;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,7 +70,8 @@ public class TCPPeriodicTask extends TimerTask {
 					log.info(resp);
 					if (resp == null || resp.length() < 10) {
 						requeueFutureTask(item);
-					}
+					} else
+						writeToFile(item.getEndPoint(), item.getCycle(), resp);
 				} catch (TimeoutException e) {
 					future.cancel(true);
 					requeueFutureTask(item);
@@ -99,4 +106,23 @@ public class TCPPeriodicTask extends TimerTask {
 		run = false;
 	}
 
+	private void writeToFile(String endPoint, String cycle, String resp) {
+		if (resp == null || resp.length() < 10)
+			return;
+
+		try {
+			BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File("data-"
+					+ endPoint + ".txt"), true)));
+
+			out.write("\n" + cycle + ": " + resp + "\n");
+			out.flush();
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
