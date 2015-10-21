@@ -1,5 +1,11 @@
 package com.uge.tcpclient;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,10 +28,12 @@ public class TCPPeriodicTask extends TimerTask {
 	private static boolean run = true;
 	private static ExecutorService executor;
 	private static Queue<QueueItem> queue;
+	private static int count = 0;
 
 	private List<String> endPoints;
 
 	public TCPPeriodicTask(List<String> ipAddresses) {
+		executor = Executors.newCachedThreadPool();
 		queue = new LinkedList<QueueItem>();
 		endPoints = ipAddresses;
 	}
@@ -34,7 +42,6 @@ public class TCPPeriodicTask extends TimerTask {
 	public void run() {
 
 		if (run) {
-			executor = Executors.newCachedThreadPool();
 			// try {
 			Calendar cal = Calendar.getInstance();
 			String min = String.valueOf(cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE) + 1);
@@ -50,7 +57,7 @@ public class TCPPeriodicTask extends TimerTask {
 				queue.addAll(tmp_queue);
 			}
 
-			log.info("Started...");
+			log.info("Started..");
 			int i = 0;
 			int size = queue.size();
 			while (i < size) { // sta se zbiva ukoliko se u nastavku neki future
@@ -63,41 +70,66 @@ public class TCPPeriodicTask extends TimerTask {
 					String resp = future.get(40, TimeUnit.SECONDS);
 					log.info(resp);
 					if (resp == null || resp.length() < 10) {
+						count++;
 						requeueFutureTask(item);
-						log.info("Requeued for second execution\n");
-					}
+					} else
+						writeToFile(item.getEndPoint(), item.getCycle(), resp, count);
 				} catch (TimeoutException e) {
-					future.cancel(true);
+					// future.cancel(true);
+					count++;
 					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated - Time Out!", e);
 				} catch (InterruptedException e) {
-					future.cancel(true);
+					// future.cancel(true);
+					count++;
 					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated - Interupt!", e);
 				} catch (ExecutionException e) {
-					future.cancel(true);
+					// future.cancel(true);
+					count++;
 					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated - Execution!", e);
 				} catch (Exception e) {
-					future.cancel(true);
+					// future.cancel(true);
+					count++;
 					requeueFutureTask(item);
 					log.log(Level.SEVERE, "Terminated!", e);
 				}
 			}
 			log.info("Finished!");
 		}
-
-		executor.shutdownNow();
 	}
 
 	private void requeueFutureTask(QueueItem item) {
 		TCPExecutor exec = new TCPExecutor(item.getCycle(), item.getEndPoint());
 		Future<String> future = executor.submit(exec);
 		queue.add(new QueueItem(future, item.getCycle(), item.getEndPoint()));
+		log.warning("Requed cycle " + item.getCycle());
 	}
 
 	public void interrupt() {
 		run = false;
+		executor.shutdownNow();
 	}
 
+	private void writeToFile(String endPoint, String cycle, String resp, int count) {
+		if (resp == null || resp.length() < 10)
+			return;
+
+		try {
+			BufferedWriter out = new BufferedWriter(
+					new OutputStreamWriter(new FileOutputStream(new File("data-" + endPoint + ".txt"), true)));
+
+			out.write("\n" + cycle + ": " + resp + "\n");
+			out.write("ciklusi su vraceni u red cekanja ukupno: " + count + " puta.\n");
+			out.flush();
+			out.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
