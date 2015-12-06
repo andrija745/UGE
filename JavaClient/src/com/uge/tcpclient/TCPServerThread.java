@@ -26,9 +26,15 @@ public class TCPServerThread extends Thread {
 					DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
 					clientSentence = inFromClient.readLine();
 					System.out.println("Received: " + clientSentence);
-					response = clientSentence.toLowerCase() + '\n';
-					System.out.println("Sending: " + response);
-					outToClient.writeBytes(response);
+					if (Math.random() < 0.8) {
+						response = clientSentence.toLowerCase() + '\n';
+						System.out.println("Sending: " + response);
+						outToClient.writeBytes(response);
+					} else
+						outToClient.writeBytes("");
+
+					outToClient.close();
+					inFromClient.close();
 					connectionSocket.close();
 				} catch (IOException e) {
 					e.printStackTrace();

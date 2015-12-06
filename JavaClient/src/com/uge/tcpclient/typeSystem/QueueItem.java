@@ -5,13 +5,14 @@ import java.util.concurrent.Future;
 public class QueueItem {
 	private Future<String> future;
 	private String cycle;
-	private String endPoint;
+	private SocketResources sktRsrc;
+	private int count;
 
-	public QueueItem(Future<String> future, String cycle, String endPoint) {
+	public QueueItem(Future<String> future, String cycle, SocketResources skt) {
 		super();
 		this.future = future;
 		this.cycle = cycle;
-		this.endPoint = endPoint;
+		this.sktRsrc = skt;
 	}
 
 	public Future<String> getFuture() {
@@ -30,17 +31,22 @@ public class QueueItem {
 		this.cycle = cycle;
 	}
 
-	public String getEndPoint() {
-		return endPoint;
-	}
-
-	public void setEndPoint(String endPoint) {
-		this.endPoint = endPoint;
+	public SocketResources getSocketResorces() {
+		return sktRsrc;
 	}
 
 	@Override
 	public String toString() {
-		return "QueueItem [future=" + future.toString() + ", cycle=" + cycle + ", endPoint=" + endPoint + "]";
+		return "QueueItem [future=" + future.toString() + ", cycle=" + cycle + ", endPoint="
+				+ sktRsrc.getSocket().getRemoteSocketAddress().toString() + "]";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
 	}
 
 }
